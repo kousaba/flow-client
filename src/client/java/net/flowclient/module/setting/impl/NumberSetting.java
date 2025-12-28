@@ -25,6 +25,9 @@ public class NumberSetting extends Setting<Double> {
     }
     public double getMinValue() {return this.min_value;}
     public double getMaxValue() {return this.max_value;}
+    public boolean hasBounds(){
+        return min_value == null && max_value == null;
+    }
     @Override
     public JsonElement save(){
         // min, maxは入れなくても良い
