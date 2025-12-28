@@ -4,9 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import net.flowclient.module.setting.Setting;
 
-public class StringSetting extends Setting<String> {
-    public StringSetting(String name, String defaultData){
-        super(name, defaultData);
+public class ColorSetting extends Setting<Integer> {
+    public ColorSetting(String name, int defaultColor){
+        super(name, defaultColor);
     }
     @Override
     public JsonElement save(){
@@ -14,8 +14,8 @@ public class StringSetting extends Setting<String> {
     }
     @Override
     public void load(JsonElement element){
-        if(element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()){
-            this.data = element.getAsString();
+        if(element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber()){
+            this.data = element.getAsInt();
         }
     }
 }

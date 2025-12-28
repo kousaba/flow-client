@@ -4,20 +4,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import net.flowclient.module.setting.Setting;
 
-public class NumberSetting extends Setting {
-    private double data;
+public class NumberSetting extends Setting<Double> {
     private double min_value;
     private double max_value;
     public NumberSetting(String name, double defaultData, double min_value, double max_value){
-        super(name);
-        this.data = defaultData;
+        super(name, defaultData);
         this.min_value = min_value;
         this.max_value = max_value;
     }
-    public double getData(){
-        return data;
-    }
-    public void setData(double data){
+    @Override
+    public void setData(Double data){
         this.data = Math.clamp(data, this.min_value, this.max_value);
     }
     public double getMinValue() {return this.min_value;}
