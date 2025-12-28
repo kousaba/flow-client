@@ -5,10 +5,9 @@ import net.flowclient.module.setting.Setting;
 import net.flowclient.module.setting.impl.BooleanSetting;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-public class Module {
+public abstract class Module {
     public String name;
     private final Map<String, Setting<?>> settings = new LinkedHashMap<>();
     public Module(String name){
@@ -24,8 +23,8 @@ public class Module {
     protected void addSetting(Setting<?> setting){
         this.settings.put(setting.getName(), setting);
     }
-    protected void onEnable(){};
-    protected void onDisable(){};
+    protected void onEnable(){}
+    protected void onDisable(){}
     public JsonObject saveAll(){
         JsonObject json = new JsonObject();
         for(Setting<?> s : settings.values()){
