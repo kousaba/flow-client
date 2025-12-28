@@ -3,6 +3,7 @@ package net.flowclient.module;
 import com.google.gson.JsonObject;
 import net.flowclient.module.setting.Setting;
 import net.flowclient.module.setting.impl.BooleanSetting;
+import net.minecraft.client.MinecraftClient;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Map;
 public abstract class Module {
     public String name;
     private final Map<String, Setting<?>> settings = new LinkedHashMap<>();
+    protected MinecraftClient mc = MinecraftClient.getInstance();
     public Module(String name){
         this.name = name;
         this.addSetting(new BooleanSetting("enabled", false));
