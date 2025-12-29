@@ -33,11 +33,18 @@ public class ColorSettingWidget extends ClickableWidget {
 
         // テキストが書き換えられたときの処理
         this.textField.setChangedListener(text -> {
+            // #を消す
+            String cleanText = text.replace("#", "");
+
             try{
-                long colorLong = Long.parseLong(text, 16);
-                setting.setData((int) colorLong);
+                // ARGBとして処理(6桁の場合はAをFFにしておく)
+                long colorValue = Long.parseLong("FFFFFFFF", 16);
+                if(cleanText.length() == 6) colorValue = Long.parseLong("FF" + cleanText, 16);
+                else if(cleanText.length() == 8) colorValue = Long.parseLong(cleanText, 16);
+
+                setting.setData((int) colorValue);
             } catch (NumberFormatException e){
-                // 更新しない
+                // 処理を無視
             }
         });
     }
@@ -62,8 +69,13 @@ public class ColorSettingWidget extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled){
-        return this.textField.mouseClicked(click, doubled) || super.mouseClicked(click, doubled);
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if(textField != null){
+            boolean clicked = this.textField.mouseClicked(click, doubled);
+            this.textField.setFocused(clicked);
+            if(clicked) return true;
+        }
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
@@ -78,4 +90,12 @@ public class ColorSettingWidget extends ClickableWidget {
 
     @Override
     public void appendClickableNarrations(NarrationMessageBuilder builder) {}
+
+    @Override
+    public void setFocused(boolean focused){
+        super.setFocused(focused);
+        if(this.textField != null){
+            this.textField.setFocused(focused);
+        }
+    }
 }

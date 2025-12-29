@@ -63,4 +63,12 @@ public class StringSettingWidget extends ClickableWidget {
     public boolean charTyped(CharInput input) {
         return this.textField.charTyped(input);
     }
+
+    @Override
+    public void setFocused(boolean focused){
+        super.setFocused(focused);
+        if(this.textField != null){
+            this.textField.setFocused(focused);
+        }
+    }
 }

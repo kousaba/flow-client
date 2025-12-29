@@ -86,8 +86,10 @@ public class NumberSettingWidget extends ClickableWidget {
     public boolean mouseClicked(Click click, boolean doubled){
         if(textField != null){
             boolean clicked = this.textField.mouseClicked(click, doubled);
-            this.textField.setFocused(clicked);
-            if(clicked) return true;
+            if(clicked){
+                this.textField.setFocused(true);
+                return true;
+            }
         }
         if(setting.hasBounds()){
             this.isSliding = true;
@@ -144,4 +146,12 @@ public class NumberSettingWidget extends ClickableWidget {
 
     @Override
     public void appendClickableNarrations(NarrationMessageBuilder builder) {}
+
+    @Override
+    public void setFocused(boolean focused){
+        super.setFocused(focused);
+        if(this.textField != null){
+            this.textField.setFocused(focused);
+        }
+    }
 }

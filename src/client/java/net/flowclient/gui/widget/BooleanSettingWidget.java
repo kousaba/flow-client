@@ -44,4 +44,9 @@ public class BooleanSettingWidget extends ClickableWidget {
 
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
+
+    @Override
+    public void setFocused(boolean focused){
+        super.setFocused(focused);
+    }
 }
