@@ -1,14 +1,12 @@
 package net.flowclient.event;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Flow;
 
 public class EventBus {
-    private final Map<Class<? extends Event>, List<Subscriber>> registry = new HashMap<>();
+    private final Map<Class<? extends Event>, List<EventData>> registry = new HashMap<>();
 
     // モジュールの発行
     public void register(Object instance){
@@ -17,7 +15,11 @@ public class EventBus {
                 Class<?> paramType = method.getParameterTypes()[0];
                 if(Event.class.isAssignableFrom(paramType)){
                     Class<? extends Event> eventClass = (Class<? extends Event>) paramType;
-                    registry.computeIfAbsent(eventClass, k -> new ArrayList<>()).add(new Subscriber(instance,method));
+                    Subscribe subscribe = method.getAnnotation(Subscribe.class);
+                    method.setAccessible(true);
+                    List<EventData> dataList = registry.computeIfAbsent(eventClass, k -> new CopyOnWriteArrayList<>());
+                    dataList.add(new EventData(instance, method, subscribe.priority()));
+                    dataList.sort(Comparator.comparingInt(d -> d.priority().ordinal()));
                 }
             }
         }
@@ -25,22 +27,20 @@ public class EventBus {
 
     // イベントの発行
     public void post(Event event){
-        List<Subscriber> subscribers = registry.get(event.getClass());
-        if(subscribers != null){
-            for(Subscriber s : subscribers){
-                s.invoke(event);
+        List<EventData> dataList = registry.get(event.getClass());
+        if(dataList == null) return;
+
+        for(EventData data : dataList){
+            if(event.isCancellable() && event.isCancelled()) break;
+            try{
+                data.method().invoke(data.instance(), event);
+            } catch(Exception e){
+                System.err.println("Failed to post event to " + data.instance().getClass().getSimpleName());
+                e.printStackTrace();
             }
         }
     }
 
     // インスタンスとメソッドをセットで保持
-    private record Subscriber(Object instance, Method method){
-        public void invoke(Event event){
-            try{
-                method.invoke(instance, event);
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
+    private record EventData(Object instance, Method method, EventPriority priority) {}
 }

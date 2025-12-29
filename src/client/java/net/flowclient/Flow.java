@@ -1,11 +1,14 @@
 package net.flowclient;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.flowclient.event.EventBus;
+import net.flowclient.module.Module;
 import net.flowclient.module.ModuleManager;
 
 import java.io.File;
 
 public class Flow implements ClientModInitializer {
+    public static final EventBus EVENT_BUS = new EventBus();
     public static Flow INSTANCE;
     public ModuleManager moduleManager;
     @Override
@@ -19,5 +22,9 @@ public class Flow implements ClientModInitializer {
         moduleManager = new ModuleManager(dir);
         moduleManager.loadConfig();
         System.out.println("Flow Client Initialized!");
+        for(Module m : moduleManager.getModules()){
+            EVENT_BUS.register(m);
+        }
+        ClientTickEvents
     }
 }

@@ -3,6 +3,7 @@ package net.flowclient.module;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.flowclient.Flow;
 import net.flowclient.module.impl.FPSModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -24,6 +25,7 @@ public class ModuleManager {
 
     private void addModule(Module module){
         modules.put(module.getClass(), module);
+        Flow.EVENT_BUS.register(module);
     }
 
     // モジュール取得

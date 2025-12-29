@@ -1,5 +1,7 @@
 package net.flowclient.mixin.client;
 
+import net.flowclient.Flow;
+import net.flowclient.event.impl.TickEvent;
 import net.flowclient.gui.screen.ConfigScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.InputUtil;
@@ -28,6 +30,13 @@ public class MinecraftClientMixin {
             isConfigScreenOpenKeyPressed = true;
         }else{
             isConfigScreenOpenKeyPressed = false;
+        }
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void onTickTail(CallbackInfo ci){
+        if(Flow.INSTANCE != null){
+            Flow.EVENT_BUS.post(new TickEvent());
         }
     }
 }
