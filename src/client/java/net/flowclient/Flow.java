@@ -17,7 +17,7 @@ public class Flow implements ClientModInitializer {
         if(!dir.exists()) dir.mkdir();
         System.out.println("ModuleManager Setting...");
         moduleManager = new ModuleManager(dir);
-//        moduleManager.loadConfig();
+        moduleManager.loadConfig();
         System.out.println("Flow Client Initialized!");
     }
 }

@@ -65,6 +65,7 @@ public class ModuleManager {
 
     public void render(DrawContext context){
         for(Module module : modules.values()){
+            if(!module.isEnabled()) continue;
             if(module instanceof HudModule hud){
                 hud.render(context);
             }

@@ -5,7 +5,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Narratable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -14,7 +13,7 @@ import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 public class ColorSettingWidget extends ClickableWidget {
-    private final ColorSetting setting;
+    private final ColorSetting setting; 
     private final TextFieldWidget textField;
 
     public ColorSettingWidget(int x, int y, int width, int height, ColorSetting setting){
@@ -27,6 +26,9 @@ public class ColorSettingWidget extends ClickableWidget {
                 MinecraftClient.getInstance().textRenderer,
                 x + (width - fieldWidth - 30), y, fieldWidth, height, Text.empty()
         );
+
+        // 文字制限
+        this.textField.setMaxLength(9); // '#' と　ARGB
 
         // 現在の色を16進数文字列にして、初期値として入力
         this.textField.setText(String.format("%08X", setting.getData()));
