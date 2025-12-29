@@ -1,4 +1,4 @@
-package net.flowclient.gui.widget;
+package net.flowclient.gui.widget.setting;
 
 import net.flowclient.module.setting.Setting;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;

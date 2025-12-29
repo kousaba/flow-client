@@ -8,6 +8,7 @@ public abstract class Setting<T> {
     public Setting(String name, T defaultData){
         this.name = name;
         this.data = defaultData;
+        this.priority = Integer.MAX_VALUE; // デフォルトはint_max
     }
     public String getName(){
         return name;
@@ -21,4 +22,8 @@ public abstract class Setting<T> {
     // セーブ、ロード
     public abstract JsonElement save();
     public abstract void load(JsonElement element);
+
+    private int priority = 0;
+    public int getPriority() {return priority;}
+    public Setting<T> setPriority(int p) {this.priority = p; return this;}
 }

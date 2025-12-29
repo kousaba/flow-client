@@ -8,8 +8,8 @@ public abstract class HudModule extends Module {
     public HudModule(String name, double x, double y){
         super(name);
         // 表示する座標
-        addSetting(new NumberSetting("x", x));
-        addSetting(new NumberSetting("y", y));
+        addSetting(new NumberSetting("x", x).setPriority(1));
+        addSetting(new NumberSetting("y", y).setPriority(2));
     }
 
     public abstract void render(DrawContext context);

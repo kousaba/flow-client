@@ -1,13 +1,10 @@
-package net.flowclient.gui.widget;
+package net.flowclient.gui.widget.setting;
 
-import it.unimi.dsi.fastutil.booleans.BooleanSet;
 import net.flowclient.module.setting.impl.BooleanSetting;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 
 public class BooleanSettingWidget extends SettingWidget<Boolean, BooleanSetting> {

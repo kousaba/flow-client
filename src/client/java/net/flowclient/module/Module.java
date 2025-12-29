@@ -15,7 +15,7 @@ public abstract class Module {
     protected MinecraftClient mc = MinecraftClient.getInstance();
     public Module(String name){
         this.name = name;
-        this.addSetting(new BooleanSetting("enabled", false));
+        this.addSetting(new BooleanSetting("enabled", false).setPriority(-1));
     }
     public void toggle(){
         BooleanSetting isEnabled = this.getSetting("enabled", BooleanSetting.class);

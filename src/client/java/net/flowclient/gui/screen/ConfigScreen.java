@@ -1,16 +1,15 @@
 package net.flowclient.gui.screen;
 
 import net.flowclient.Flow;
-import net.flowclient.gui.widget.*;
+import net.flowclient.gui.widget.WidgetFactory;
+import net.flowclient.gui.widget.setting.*;
 import net.flowclient.module.HudModule;
 import net.flowclient.module.Module;
-import net.flowclient.module.ModuleManager;
 import net.flowclient.module.setting.Setting;
 import net.flowclient.module.setting.impl.BooleanSetting;
 import net.flowclient.module.setting.impl.ColorSetting;
 import net.flowclient.module.setting.impl.NumberSetting;
 import net.flowclient.module.setting.impl.StringSetting;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
@@ -20,7 +19,9 @@ import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class ConfigScreen extends Screen {
     private double scrollOffset = 0;
@@ -53,17 +54,14 @@ public class ConfigScreen extends Screen {
     public void refreshSettings(){
         this.clearChildren();
         if (selectedModule != null) {
+            List<Setting<?>> settings = new ArrayList<>(selectedModule.getAllSettings());
+            settings.sort(Comparator.comparingInt(Setting::getPriority));
             int settingX = windowX + sidebarWidth + 10;
             int settingY = windowY + 40;
             int widgetWidth = windowWidth - sidebarWidth - 40;
-            for(Setting<?> setting : selectedModule.getAllSettings()){
-                if(setting instanceof BooleanSetting bool) this.addDrawableChild(new BooleanSettingWidget(settingX, settingY, widgetWidth, 20, bool));
-                else if(setting instanceof NumberSetting num) this.addDrawableChild(new NumberSettingWidget(settingX, settingY, widgetWidth, 20, num));
-                else if(setting instanceof StringSetting str) this.addDrawableChild(new StringSettingWidget(settingX, settingY, widgetWidth, 20, str));
-                else if(setting instanceof ColorSetting clr) this.addDrawableChild(new ColorSettingWidget(settingX, settingY, widgetWidth, 20, clr));
-                else{
-                    throw new UnsupportedOperationException("Unsupported setting type: " + setting.getClass().getName());
-                }
+            for(Setting<?> setting : settings){
+                SettingWidget<?, ?> widget = WidgetFactory.create(settingX, settingY, widgetWidth, 20, setting);
+                this.addDrawableChild(widget);
                 settingY += 25;
             }
         }
@@ -89,6 +87,7 @@ public class ConfigScreen extends Screen {
         // モジュール内のリスト描画
         TextRenderer textRenderer = this.client.textRenderer;
         int currentY = windowY + 40;
+
         for(Module m : Flow.INSTANCE.moduleManager.getModules()){
             int color = (m == selectedModule) ? 0xFF55FFFF : 0xFFFFFFFF;
             context.drawText(textRenderer, m.name, windowX + 10, currentY, color, true);
