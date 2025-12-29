@@ -14,13 +14,16 @@ public abstract class HudModule extends Module {
 
     public abstract void render(DrawContext context);
 
+    public abstract double getWidth();
+    public abstract double getHeight();
+
     // マウス上に存在するか
     public boolean isHovered(double mouseX, double mouseY){
         NumberSetting xSetting = getSetting("x", NumberSetting.class);
         NumberSetting ySetting = getSetting("y", NumberSetting.class);
-        NumberSetting heightSetting = getSetting("height", NumberSetting.class);
-        NumberSetting widthSetting = getSetting("width", NumberSetting.class);
-        double x = xSetting.getData(), y = ySetting.getData(), h = heightSetting.getData(), w = widthSetting.getData();
+        double w = getWidth();
+        double h = getHeight();
+        double x = xSetting.getData(), y = ySetting.getData();
         return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
     }
 }

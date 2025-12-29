@@ -19,26 +19,27 @@ public class BooleanSettingWidget extends ClickableWidget {
 
     @Override
     public void onClick(Click click, boolean doubled){
-        if(doubled) return;
+        System.out.println("Click!!");
         setting.toggle();
     }
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta){
         // 背景描画
-        int color = isHovered() ? 0xFF555555 : 0xFF333333; // ホバー時は少し明るく
-        context.fill(getX(), getY(), getX() + width, getY() + height, 0xFF000000); // 枠線
-        context.fill(getX() + 1, getY() + 1, getX() + width - 1, getY() + height - 1, color); // 内側
+        int alpha = 0x80;
+        int baseColor = isHovered() ? 0x555555 : 0x222222;
+        int color = (alpha << 24) | baseColor;
 
-        // ステータス表示
-        int statusColor = setting.getData() ? 0xFF55FF55 : 0xFFFF5555;
-        // 内側に小さな四角形を表示
-        int indicatorSize = height - 4;
-        context.fill(getX() + width - indicatorSize - 2, getY() + 2, getX() + width - 2, getY() + height - 2, statusColor);
+        context.fill(getX(), getY(), getX() + width, getY() + height, color);
 
         // テキスト描画
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        context.drawText(textRenderer, getMessage(), getX() + 4, getY() + (height - 8) / 2, 0xFFFFFF, true);
+        boolean enabled = setting.getData();
+        String label = setting.getName() + ": " + (enabled ? "ON" : "OFF");
+
+        int statusColor = enabled ? 0xFF55FF55 : 0xFFFF5555;
+
+        context.drawText(textRenderer, Text.literal(label), getX() + 5, getY() + (height - 8) / 2, statusColor, true);
     }
 
     @Override

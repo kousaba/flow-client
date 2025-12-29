@@ -5,6 +5,7 @@ import net.flowclient.module.setting.Setting;
 import net.flowclient.module.setting.impl.BooleanSetting;
 import net.minecraft.client.MinecraftClient;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,6 +22,9 @@ public abstract class Module {
         isEnabled.toggle();
         if(isEnabled.getData()) onEnable();
         else onDisable();
+    }
+    public Boolean isEnabled(){
+        return this.getSetting("enabled", BooleanSetting.class).getData();
     }
     protected void addSetting(Setting<?> setting){
         this.settings.put(setting.getName(), setting);
@@ -45,5 +49,8 @@ public abstract class Module {
     @SuppressWarnings("unchecked")
     public <T extends Setting<?>> T getSetting(String name, Class<T> clazz){
         return (T) settings.get(name);
+    }
+    public Collection<Setting<?>> getAllSettings(){
+        return settings.values();
     }
 }

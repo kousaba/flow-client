@@ -52,13 +52,20 @@ public class NumberSettingWidget extends ClickableWidget {
     }
 
     private void renderSlider(DrawContext context, int mouseX, int mouseY){
-        context.fill(getX(), getY(), getX() + width, getY() + height, 0xFF222222);
+        Double minVal = setting.getMinValue();
+        Double maxVal = setting.getMaxValue();
+        Double currentVal = setting.getData();
+        if(minVal == null || maxVal == null || currentVal == null){
+            throw new NullPointerException("minVal, maxVal, data must not be null.");
+        }
 
         // 現在の値の割合
-        double min = setting.getMinValue();
-        double max = setting.getMaxValue();
-        double current = setting.getData();
+        double min = minVal;
+        double max = maxVal;
+        double current = currentVal;
         double renderRatio = (current - min) / (max - min);
+
+        context.fill(getX(), getY(), getX() + width, getY() + height, 0xFF222222);
 
         // スライダーのバー
         int sliderWidth = (int) (width * renderRatio);
@@ -77,6 +84,11 @@ public class NumberSettingWidget extends ClickableWidget {
 
     @Override
     public boolean mouseClicked(Click click, boolean doubled){
+        if(textField != null){
+            boolean clicked = this.textField.mouseClicked(click, doubled);
+            this.textField.setFocused(clicked);
+            if(clicked) return true;
+        }
         if(setting.hasBounds()){
             this.isSliding = true;
             updateSliderValue(click.x());
@@ -102,8 +114,13 @@ public class NumberSettingWidget extends ClickableWidget {
     }
 
     private void updateSliderValue(double mouseX){
-        double min = setting.getMinValue();
-        double max = setting.getMaxValue();
+        Double minVal = setting.getMinValue();
+        Double maxVal = setting.getMaxValue();
+        if (minVal == null || maxVal == null) {
+            throw new NullPointerException("minVal and maxVal must not be null");
+        }
+        double min = minVal;
+        double max = maxVal;
 
         // マウス位置から割合を計算(0~1)
         double diff = Math.min(Math.max((mouseX - getX()) / (double) width, 0.0), 1.0);

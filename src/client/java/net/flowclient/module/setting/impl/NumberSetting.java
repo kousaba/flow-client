@@ -17,16 +17,16 @@ public class NumberSetting extends Setting<Double> {
     }
     @Override
     public void setData(Double data){
-        if(min_value == null && max_value == null) {
+        if(min_value != null && max_value != null) {
             this.data = Math.clamp(data, this.min_value, this.max_value);
         }else{
             this.data = data;
         }
     }
-    public double getMinValue() {return this.min_value;}
-    public double getMaxValue() {return this.max_value;}
+    public Double getMinValue() {return this.min_value;}
+    public Double getMaxValue() {return this.max_value;}
     public boolean hasBounds(){
-        return min_value == null && max_value == null;
+        return min_value != null && max_value != null;
     }
     @Override
     public JsonElement save(){

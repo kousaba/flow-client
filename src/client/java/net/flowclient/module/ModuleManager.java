@@ -3,6 +3,7 @@ package net.flowclient.module;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.flowclient.module.impl.FPSModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 
@@ -18,7 +19,7 @@ public class ModuleManager {
 
     public ModuleManager(File dataDir){
         this.configFile = new File(dataDir, "modules.json");
-
+        addModule(new FPSModule());
     }
 
     private void addModule(Module module){

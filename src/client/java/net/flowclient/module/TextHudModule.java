@@ -39,12 +39,12 @@ public abstract class TextHudModule extends HudModule {
         return result;
     }
 
-    public int getWidth(){
+    public double getWidth(){
         String text = getDisplayText();
         return mc.textRenderer.getWidth(text);
     }
 
-    public int getHeight(){
+    public double getHeight(){
         String text = getDisplayText();
         return mc.advanceValidatingTextRenderer.fontHeight;
     }

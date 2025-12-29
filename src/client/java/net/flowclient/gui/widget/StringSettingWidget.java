@@ -46,7 +46,12 @@ public class StringSettingWidget extends ClickableWidget {
     // マウス・キーボードの入力を内部のテキストフィールドに伝える
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
-        return this.textField.mouseClicked(click, doubled) || super.mouseClicked(click, doubled);
+        if(textField != null){
+            boolean clicked = this.textField.mouseClicked(click, doubled);
+            this.textField.setFocused(clicked);
+            if(clicked) return true;
+        }
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
