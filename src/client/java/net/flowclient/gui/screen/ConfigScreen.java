@@ -1,10 +1,7 @@
 package net.flowclient.gui.screen;
 
 import net.flowclient.Flow;
-import net.flowclient.gui.widget.BooleanSettingWidget;
-import net.flowclient.gui.widget.ColorSettingWidget;
-import net.flowclient.gui.widget.NumberSettingWidget;
-import net.flowclient.gui.widget.StringSettingWidget;
+import net.flowclient.gui.widget.*;
 import net.flowclient.module.HudModule;
 import net.flowclient.module.Module;
 import net.flowclient.module.ModuleManager;
@@ -81,6 +78,7 @@ public class ConfigScreen extends Screen {
     }
 
     // ゲームを一時停止しない
+    @Override
     public boolean shouldPause(){
         return false;
     }
@@ -135,15 +133,17 @@ public class ConfigScreen extends Screen {
                     System.out.println("Clicked bar!");
                     return true;
                 }
+                currentY += itemHeight;
             }
         }else{
             // ドラッグでモジュール移動
             for(Module module : Flow.INSTANCE.moduleManager.getModules()){
-                if(module instanceof HudModule hud){
-                    if(hud.isEnabled() && hud.isHovered(click.x(), click.y())){
+                if(module instanceof HudModule hud && hud.isEnabled()){
+                    if(hud.isHovered(click.x(), click.y())){
                         this.draggingModule = hud;
                         this.dragOffsetX = (int) (click.x() - hud.getSetting("x", NumberSetting.class).getData());
                         this.dragOffsetY = (int) (click.y() - hud.getSetting("y", NumberSetting.class).getData());
+                        return true;
                     }
                 }
             }
@@ -158,9 +158,42 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
+    public boolean mouseDragged(Click click, double offsetX, double offsetY){
+        if(this.draggingModule != null){
+            // マウスの現在位置から、オフセットを引いて座標計算
+            double newX = click.x() - dragOffsetX;
+            double newY = click.y() - dragOffsetY;
+
+            // 設定値を更新
+            draggingModule.getSetting("x", NumberSetting.class).setData(newX);
+            draggingModule.getSetting("y", NumberSetting.class).setData(newY);
+
+            syncWidgetValues();
+
+            return true;
+        }
+        return super.mouseDragged(click, offsetX, offsetY);
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         scrollOffset -= verticalAmount * 20;
         if (scrollOffset < 0) scrollOffset = 0;
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        // 画面全体を 40% くらいの黒で塗りつぶす
+        context.fill(0, 0, this.width, this.height, 0x60000000);
+    }
+
+    // 値を同期する
+    private void syncWidgetValues(){
+        for(var element : this.children()){
+            if(element instanceof SettingWidget<?,?> settingWidget){
+                settingWidget.updateValue();
+            }
+        }
     }
 }

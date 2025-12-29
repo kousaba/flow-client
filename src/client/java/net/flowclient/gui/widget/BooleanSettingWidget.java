@@ -1,5 +1,6 @@
 package net.flowclient.gui.widget;
 
+import it.unimi.dsi.fastutil.booleans.BooleanSet;
 import net.flowclient.module.setting.impl.BooleanSetting;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -9,11 +10,11 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 
-public class BooleanSettingWidget extends ClickableWidget {
+public class BooleanSettingWidget extends SettingWidget<Boolean, BooleanSetting> {
     private final BooleanSetting setting;
 
     public BooleanSettingWidget(int x, int y, int width, int height, BooleanSetting setting){
-        super(x,y,width,height, Text.of(setting.getName()));
+        super(x,y,width,height, setting);
         this.setting = setting;
     }
 
@@ -43,10 +44,10 @@ public class BooleanSettingWidget extends ClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
-
-    @Override
     public void setFocused(boolean focused){
         super.setFocused(focused);
     }
+
+    @Override
+    public void updateValue(){}
 }

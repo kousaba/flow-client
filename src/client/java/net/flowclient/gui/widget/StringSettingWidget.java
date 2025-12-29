@@ -12,13 +12,11 @@ import net.minecraft.client.input.CharInput;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
-public class StringSettingWidget extends ClickableWidget {
-    private final StringSetting setting;
+public class StringSettingWidget extends SettingWidget<String, StringSetting> {
     private final TextFieldWidget textField; // 内部にマイクラ標準の入力欄を持つ
 
     public StringSettingWidget(int x, int y, int width, int height, StringSetting setting) {
-        super(x, y, width, height, Text.of(setting.getName()));
-        this.setting = setting;
+        super(x, y, width, height, setting);
 
         // 右側に 2/3 の幅で入力欄を作る
         int fieldWidth = (int)(width * 0.6);
@@ -69,6 +67,13 @@ public class StringSettingWidget extends ClickableWidget {
         super.setFocused(focused);
         if(this.textField != null){
             this.textField.setFocused(focused);
+        }
+    }
+
+    @Override
+    public void updateValue(){
+        if(this.textField != null && !this.textField.isFocused()){
+            this.textField.setText(setting.getData());
         }
     }
 }

@@ -1,5 +1,6 @@
 package net.flowclient.gui.widget;
 
+import net.flowclient.module.setting.Setting;
 import net.flowclient.module.setting.impl.ColorSetting;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -12,12 +13,12 @@ import net.minecraft.client.input.CharInput;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
-public class ColorSettingWidget extends ClickableWidget {
+public class ColorSettingWidget extends SettingWidget<Integer, ColorSetting> {
     private final ColorSetting setting; 
     private final TextFieldWidget textField;
 
     public ColorSettingWidget(int x, int y, int width, int height, ColorSetting setting){
-        super(x,y,width,height, Text.of(setting.getName()));
+        super(x,y,width,height, setting);
         this.setting = setting;
 
         // 入力欄の幅調整
@@ -91,13 +92,17 @@ public class ColorSettingWidget extends ClickableWidget {
     }
 
     @Override
-    public void appendClickableNarrations(NarrationMessageBuilder builder) {}
-
-    @Override
     public void setFocused(boolean focused){
         super.setFocused(focused);
         if(this.textField != null){
             this.textField.setFocused(focused);
+        }
+    }
+
+    @Override
+    public void updateValue(){
+        if(this.textField != null && !this.textField.isFocused()){
+            this.textField.setText(String.valueOf(setting.getData()));
         }
     }
 }

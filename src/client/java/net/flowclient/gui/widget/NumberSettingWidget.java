@@ -12,21 +12,20 @@ import net.minecraft.client.input.CharInput;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
-public class NumberSettingWidget extends ClickableWidget {
-    private final NumberSetting setting;
+public class NumberSettingWidget extends SettingWidget<Double, NumberSetting> {
     // スライダー用
     private boolean isSliding = false;
     // テキスト入力用
     private TextFieldWidget textField = null;
 
     public NumberSettingWidget(int x, int y, int width, int height, NumberSetting setting){
-        super(x,y,width,height, Text.of(setting.getName()));
-        this.setting = setting;
+        super(x,y,width,height, setting);
         if(!setting.hasBounds()){
             this.textField = new TextFieldWidget(
                     MinecraftClient.getInstance().textRenderer,
                     x + width / 2, y, width / 2, height, Text.empty()
             );
+            this.textField.setMaxLength(10);
             this.textField.setText(String.valueOf(setting.getData()));
             this.textField.setChangedListener(this::onTextChanged);
         }
@@ -145,13 +144,19 @@ public class NumberSettingWidget extends ClickableWidget {
     }
 
     @Override
-    public void appendClickableNarrations(NarrationMessageBuilder builder) {}
-
-    @Override
     public void setFocused(boolean focused){
         super.setFocused(focused);
         if(this.textField != null){
             this.textField.setFocused(focused);
+        }
+    }
+
+    // 設定をもう一度読み込んで値を更新
+    @Override
+    public void updateValue(){
+        if(this.textField != null && !this.textField.isFocused()){
+            String formatted = String.format("%.2f", setting.getData());
+            this.textField.setText(formatted);
         }
     }
 }
