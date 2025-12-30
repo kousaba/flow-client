@@ -141,4 +141,25 @@ public class CodeEditorWidget extends ClickableWidget {
 
     @Override
     public void appendClickableNarrations(NarrationMessageBuilder builder) {}
+
+    public String getText(){
+        StringBuilder sb = new StringBuilder();
+        for(StringBuilder line : lines){
+            sb.append(line).append("\n");
+        }
+        return sb.toString();
+    }
+
+    public void setText(String text){
+        this.lines.clear();
+        String[] splitLines = text.split("\n", -1);
+        for(String s : splitLines){
+            // winの改行コード対策("\r")
+            this.lines.add(new StringBuilder(s.replace("\r", "")));
+        }
+
+        // カーソル位置リセット
+        this.cursorRow = 0;
+        this.cursorCol = 0;
+    }
 }

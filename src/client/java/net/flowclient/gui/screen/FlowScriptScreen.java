@@ -1,8 +1,10 @@
 package net.flowclient.gui.screen;
 
 import net.flowclient.gui.widget.editor.CodeEditorWidget;
+import net.flowclient.script.ScriptManager;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -10,6 +12,7 @@ import org.lwjgl.glfw.GLFW;
 public class FlowScriptScreen extends Screen {
     private int sidebarWidth;
     private int consoleHeight;
+    private String currentFileName = "test.flow";
 
     private CodeEditorWidget editorWidget;
 
@@ -31,6 +34,17 @@ public class FlowScriptScreen extends Screen {
         // エディタウィジェットの作成
         this.editorWidget = new CodeEditorWidget(editorX, editorY, editorWidth, editorHeight);
         this.addDrawableChild(editorWidget);
+
+        int btnX = this.width - 60;
+        int btnY = 5;
+        this.addDrawableChild(ButtonWidget.builder(Text.of("Save"), button -> {
+            saveCurrentFile();
+        }).dimensions(btnX, btnY, 50, 20).build());
+
+        String content = ScriptManager.loadScript(currentFileName);
+        if(!content.isEmpty()){
+            editorWidget.setText(content);
+        }
 
         // フォーカスをエディタに当てる
         this.setFocused(editorWidget);
@@ -70,7 +84,16 @@ public class FlowScriptScreen extends Screen {
         if(input.getKeycode() == GLFW.GLFW_KEY_ESCAPE){
             this.close();
             return true;
+        } else if(input.getKeycode() == GLFW.GLFW_KEY_S && (input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0){
+            saveCurrentFile();
+            return true;
         }
         return super.keyPressed(input);
+    }
+
+    private void saveCurrentFile(){
+        if(editorWidget != null){
+            ScriptManager.saveScript(currentFileName, editorWidget.getText());
+        }
     }
 }
