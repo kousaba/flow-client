@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.flowclient.event.EventBus;
 import net.flowclient.module.Module;
 import net.flowclient.module.ModuleManager;
+import net.flowclient.script.ScriptText;
 
 import java.io.File;
 
@@ -25,5 +26,15 @@ public class Flow implements ClientModInitializer {
         for(Module m : moduleManager.getModules()){
             EVENT_BUS.register(m);
         }
+        String code = """
+    fn on_tick() {
+        let fps = 60;
+        if (fps > 30) {
+            color = #00FF00;
+        }
+        text = "FPS: " + fps;
+    }
+    """;
+        ScriptText.testParser(code);
     }
 }

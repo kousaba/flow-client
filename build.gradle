@@ -1,6 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
 	id 'maven-publish'
+	id 'antlr'
 }
 
 version = project.mod_version
@@ -35,6 +36,15 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// コード生成ツール (コンパイル時のみ使用)
+	antlr "org.antlr:antlr4:4.13.1"
+
+	// ランタイムライブラリ (コンパイルにも実行にも必要)
+	implementation "org.antlr:antlr4-runtime:4.13.1"
+
+	// ★重要: Modの中にライブラリを埋め込む (これがないとゲーム起動時にクラッシュします)
+	include "org.antlr:antlr4-runtime:4.13.1"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	// modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
@@ -87,4 +97,17 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+sourceSets {
+	main{
+		antlr{
+			srcDirs = ['src/client/antlr']
+		}
+	}
+}
+
+generateGrammarSource{
+	maxHeapSize = "64m"
+	arguments += ['-visitor']
 }
