@@ -3,6 +3,7 @@ package net.flowclient.mixin.client;
 import net.flowclient.Flow;
 import net.flowclient.event.impl.TickEvent;
 import net.flowclient.gui.screen.ConfigScreen;
+import net.flowclient.gui.screen.FlowScriptScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
@@ -30,6 +31,9 @@ public class MinecraftClientMixin {
             isConfigScreenOpenKeyPressed = true;
         }else{
             isConfigScreenOpenKeyPressed = false;
+            if(InputUtil.isKeyPressed(client.getWindow(), GLFW.GLFW_KEY_F12)){
+                client.setScreen(new FlowScriptScreen());
+            }
         }
     }
 
