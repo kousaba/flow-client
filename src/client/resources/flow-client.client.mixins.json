@@ -3,8 +3,12 @@
 	"package": "net.flowclient.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ClientConnectionMixin",
+		"ExampleClientMixin",
+		"InGameHudMixin",
+		"KeyboardMixin",
 		"MinecraftClientMixin",
-		"InGameHudMixin"
+		"WorldRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

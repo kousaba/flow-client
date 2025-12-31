@@ -10,18 +10,23 @@ public class EventBus {
 
     // モジュールの発行
     public void register(Object instance){
-        for(Method method : instance.getClass().getDeclaredMethods()){
-            if(method.isAnnotationPresent(Subscribe.class) && method.getParameterCount() == 1){
-                Class<?> paramType = method.getParameterTypes()[0];
-                if(Event.class.isAssignableFrom(paramType)){
-                    Class<? extends Event> eventClass = (Class<? extends Event>) paramType;
-                    Subscribe subscribe = method.getAnnotation(Subscribe.class);
-                    method.setAccessible(true);
-                    List<EventData> dataList = registry.computeIfAbsent(eventClass, k -> new CopyOnWriteArrayList<>());
-                    dataList.add(new EventData(instance, method, subscribe.priority()));
-                    dataList.sort(Comparator.comparingInt(d -> d.priority().ordinal()));
+        Class<?> clazz = instance.getClass();
+        // 親クラスが存在する限りループする
+        while(clazz != null && clazz != Object.class){
+            for(Method method : clazz.getDeclaredMethods()){
+                if(method.isAnnotationPresent(Subscribe.class) && method.getParameterCount() == 1){
+                    Class<?> paramType = method.getParameterTypes()[0];
+                    if(Event.class.isAssignableFrom(paramType)){
+                        Class<? extends Event> eventClass = (Class<? extends Event>) paramType;
+                        Subscribe subscribe = method.getAnnotation(Subscribe.class);
+                        method.setAccessible(true);
+                        List<EventData> dataList = registry.computeIfAbsent(eventClass, k -> new CopyOnWriteArrayList<>());
+                        dataList.add(new EventData(instance, method, subscribe.priority()));
+                        dataList.sort(Comparator.comparingInt(d -> d.priority().ordinal()));
+                    }
                 }
             }
+            clazz = clazz.getSuperclass();
         }
     }
 

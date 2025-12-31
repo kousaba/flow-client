@@ -37,10 +37,17 @@ public class MinecraftClientMixin {
         }
     }
 
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void onTickHead(CallbackInfo ci){
+        if(Flow.INSTANCE != null){
+            Flow.EVENT_BUS.post(new TickEvent(TickEvent.Phase.START));
+        }
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTickTail(CallbackInfo ci){
         if(Flow.INSTANCE != null){
-            Flow.EVENT_BUS.post(new TickEvent());
+            Flow.EVENT_BUS.post(new TickEvent(TickEvent.Phase.END));
         }
     }
 }

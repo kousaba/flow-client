@@ -1,6 +1,7 @@
 package net.flowclient.mixin.client;
 
 import net.flowclient.Flow;
+import net.flowclient.event.impl.Render2DEvent;
 import net.flowclient.module.ModuleManager;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class InGameHudMixin {
     @Inject(method = "render", at = @At("TAIL"))
     public void onRender(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci){
-        // HudModuleを描画
-        Flow.INSTANCE.moduleManager.render(context);
+        System.out.println("onRender called EVENT_BUS post");
+        Flow.EVENT_BUS.post(new Render2DEvent(context, tickCounter));
     }
 }

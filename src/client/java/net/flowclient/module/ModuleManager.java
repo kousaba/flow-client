@@ -4,9 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.flowclient.Flow;
+import net.flowclient.event.Subscribe;
+import net.flowclient.event.impl.Render2DEvent;
 import net.flowclient.module.impl.FPSModule;
+import net.flowclient.module.impl.ScriptModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import org.apache.logging.log4j.core.script.Script;
 
 import java.io.*;
 import java.util.Collection;
@@ -21,6 +25,7 @@ public class ModuleManager {
     public ModuleManager(File dataDir){
         this.configFile = new File(dataDir, "modules.json");
         addModule(new FPSModule());
+        addModule(new ScriptModule());
     }
 
     private void addModule(Module module){
@@ -65,11 +70,25 @@ public class ModuleManager {
         }
     }
 
-    public void render(DrawContext context){
+//    @Subscribe
+//    public void onRender(Render2DEvent event){
+//        this.render(event.getContext());
+//    }
+
+//    public void render(DrawContext context){
+//        for(Module module : modules.values()){
+//            if(!module.isEnabled()) continue;
+//            if(module instanceof HudModule hud){
+//                hud.render(context);
+//            }
+//        }
+//    }
+
+    public void reloadScripts(){
         for(Module module : modules.values()){
             if(!module.isEnabled()) continue;
-            if(module instanceof HudModule hud){
-                hud.render(context);
+            if(module instanceof ScriptModule script){
+                script.reload();
             }
         }
     }

@@ -26,6 +26,7 @@ public class Flow implements ClientModInitializer {
         for(Module m : moduleManager.getModules()){
             EVENT_BUS.register(m);
         }
+        EVENT_BUS.register(moduleManager);
         String code = """
     fn on_tick() {
         let fps = 60;

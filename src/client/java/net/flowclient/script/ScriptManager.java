@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,4 +55,19 @@ public class ScriptManager {
         return names;
     }
 
+    public static boolean renameScript(String oldName, String newName){
+        init();
+        File oldFile = new File(SCRIPTS_DIR, oldName);
+        File newFile = new File(SCRIPTS_DIR, newName);
+        if(!oldFile.exists() || newFile.exists()){
+            return false;
+        }
+        try{
+            Files.move(oldFile.toPath(), newFile.toPath(), StandardCopyOption.ATOMIC_MOVE);
+            return true;
+        } catch(IOException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

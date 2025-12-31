@@ -28,6 +28,7 @@ public abstract class TextHudModule extends HudModule {
     public String getDisplayText() {
         String format = getSetting("format", StringSetting.class).getData();
         Map<String, String> replaceMap = getValue();
+        if (replaceMap == null) return "";
 
         String result = format;
         for (String key : placeHolder) {
