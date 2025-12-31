@@ -71,7 +71,7 @@ expressionStmt
 expression
     : '(' expression ')' # ParenExpr
     | <assoc=right> expression '^' expression # PowerExpr
-    | ('-' | '!') expression # UnaryExpr
+    | op=('-' | '!') expression # UnaryExpr
     | expression op=('*' | '/' | '%') expression # MultiplicativeExpr
     | expression op=('+' | '-') expression # AdditiveExpr
     | expression op=('==' | '!=' | '<' | '>' | '<=' | '>=') expression # RelationalExpr
