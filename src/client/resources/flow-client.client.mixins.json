@@ -8,7 +8,11 @@
 		"InGameHudMixin",
 		"KeyboardMixin",
 		"MinecraftClientMixin",
-		"WorldRendererMixin"
+		"WorldRendererMixin",
+		"GameRendererMixin",
+		"LightmapTextureManagerMixin",
+		"ClientPlayNetworkHandlerMixin",
+		"ChatHudMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

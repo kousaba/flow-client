@@ -1,6 +1,7 @@
 package net.flowclient.module.impl;
 
 import net.flowclient.event.Subscribe;
+import net.flowclient.event.impl.ChatReceiveEvent;
 import net.flowclient.event.impl.Render2DEvent;
 import net.flowclient.event.impl.TickEvent;
 import net.flowclient.module.HudModule;
@@ -43,6 +44,7 @@ public class ScriptModule extends TextHudModule {
 
     public ScriptModule(){
         super("Script", 10, 10, "", List.of(""));
+        System.out.println("ScriptModule Created: " + System.identityHashCode(this));
         reload();
     }
 
@@ -60,7 +62,6 @@ public class ScriptModule extends TextHudModule {
         });
         ParseTree tree = parser.script();
         interpreter.load(tree);
-        interpreter.callFunction("on_init");
         isLoaded = true;
     }
 
@@ -74,17 +75,6 @@ public class ScriptModule extends TextHudModule {
     @Override
     public void render(DrawContext context){
         if(!isLoaded || !isEnabled()) return;
-//        Object textObj = interpreter.getVariable("text");
-//        Object colorObj = interpreter.getVariable("color");
-//        String text = textObj != null ? textObj.toString() : "";
-//        int color = colorObj instanceof Number ? ((Number) colorObj).intValue() : -1;
-//        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-//        context.drawText(textRenderer, text, (int)getX(), (int)getY(), color, true);
-//        FlowScriptLib.currentContext = context;
-//        try{
-//            interpreter.callFunction("on_render");
-//            Object text
-//        }
         FlowScriptLib.currentContext = context;
         try{
             interpreter.callFunction("on_render");
@@ -100,6 +90,13 @@ public class ScriptModule extends TextHudModule {
         } finally {
             FlowScriptLib.currentContext = null;
         }
+    }
+
+    @Subscribe
+    public void onChat(ChatReceiveEvent event){
+        if(!isLoaded || !isEnabled()) return;
+        System.out.println("on_chat called");
+        interpreter.callFunction("on_chat", List.of(event.message));
     }
 
     @Override

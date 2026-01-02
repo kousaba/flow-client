@@ -62,6 +62,32 @@ public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
             }
         }
     }
+    public Object callFunction(String name, List<Object> args){
+        executionCount = 0;
+        if(functions.containsKey(name)){
+            FlowScriptParser.FunctionDeclContext funcCtx = functions.get(name);
+            Map<String, Object> localScope = new HashMap<>();
+            if(funcCtx.paramList() != null){
+                var paramNames = funcCtx.paramList().ID();
+                for(int i = 0;i < paramNames.size();i++){
+                    String paramName = paramNames.get(i).getText();
+                    Object argValue = (i < args.size()) ? args.get(i) : null;
+                    localScope.put(paramName, argValue);
+                }
+            }
+            scopeStack.push(localScope);
+            try{
+                this.visit(funcCtx.block());
+            } catch (ReturnException e){
+                return e.value;
+            } catch (RuntimeException e){
+                System.err.println("Runtime Error in " + name + ": " + e.getMessage());
+            } finally {
+                scopeStack.pop();
+            }
+        }
+        return null;
+    }
 
     // 変数を外部からセットする(FPSなど)
     public void setVariable(String name, Object value){

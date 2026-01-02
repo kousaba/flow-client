@@ -3,18 +3,25 @@ package net.flowclient.script.runtime;
 import net.flowclient.Flow;
 import net.flowclient.gui.screen.FlowScriptScreen;
 import net.flowclient.module.impl.ScriptLibModule;
+import net.flowclient.module.impl.ScriptModule;
 import net.flowclient.module.setting.impl.NumberSetting;
 import net.flowclient.util.FlowLogger;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.util.Window;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import org.lwjgl.glfw.GLFW;
 
+import java.awt.*;
 import java.util.List;
 
 public class FlowScriptLib {
+    public static double fovModifier = 1.0;
+    public static Double overrideGamma = null;
     public static DrawContext currentContext = null;
     public static void registerAll(FlowScriptInterpreter interpreter){
         ScriptLibModule settings = Flow.INSTANCE.moduleManager.getModule(ScriptLibModule.class);
@@ -166,5 +173,99 @@ public class FlowScriptLib {
             }
             return null;
         });
+        interpreter.registerNativeFunction("is_key_down", args -> {
+            String keyName = args.get(0).toString().toUpperCase();
+            if(keyName.equals("LMB")) return GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_1) == GLFW.GLFW_PRESS;
+            if(keyName.equals("RMB")) return GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_2) == GLFW.GLFW_PRESS;
+            int keyCode = getKeyCode(keyName);
+            if(keyCode == -1) return false;
+            Window handle = MinecraftClient.getInstance().getWindow();
+            return InputUtil.isKeyPressed(handle, keyCode);
+        });
+        interpreter.registerNativeFunction("set_fov_modifier", args -> {
+            if(!args.isEmpty()){
+                fovModifier = ScriptUtils.asDouble(args.get(0));
+            }
+            return null;
+        });
+        interpreter.registerNativeFunction("get_fov_mofidier", args -> fovModifier);
+        interpreter.registerNativeFunction("set_gamma", args -> {
+            if(!args.isEmpty()){
+                overrideGamma = ScriptUtils.asDouble(args.get(0));
+            }else{
+                overrideGamma = null;
+            }
+            return null;
+        });
+        interpreter.registerNativeFunction("get_gamma", args -> overrideGamma);
+        interpreter.registerNativeFunction("set_sprinting", args -> {
+            if (!args.isEmpty()) {
+                boolean sprint = ScriptUtils.asBoolean(args.get(0));
+                var player = MinecraftClient.getInstance().player;
+                if (player != null) {
+                    player.setSprinting(sprint);
+                }
+            }
+            return null;
+        });
+        interpreter.registerNativeFunction("send_chat", args -> {
+            if(!args.isEmpty()){
+                String msg = args.get(0).toString();
+                var player = MinecraftClient.getInstance().player;
+                if(player != null){
+                    player.networkHandler.sendChatMessage(msg);
+                }
+            }
+            return null;
+        });
+        interpreter.registerNativeFunction("contains", args -> {
+            if(args.size() < 2) return false;
+            String target = args.get(0).toString();
+            String search = args.get(1).toString();
+            return target.contains(search);
+        });
+        interpreter.registerNativeFunction("to_lower", args -> {
+            if(args.isEmpty()) return "";
+            return args.get(0).toString().toLowerCase();
+        });
+    }
+
+    private static int getKeyCode(String keyName){
+        if(keyName.length() == 1){
+            char c = keyName.charAt(0);
+            if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                return c;
+            }
+        }
+        if(keyName.charAt(0) == 'F'){
+            try{
+                int fn = Integer.parseInt(keyName.substring(1));
+                if(fn >= 1 && fn <= 12){
+                    return GLFW.GLFW_KEY_F1 + (fn - 1);
+                }
+            } catch(Exception ignored){}
+        }
+        return switch(keyName){
+            case "SPACE" -> GLFW.GLFW_KEY_SPACE;
+            case "SHIFT" -> GLFW.GLFW_KEY_LEFT_SHIFT;
+            case "RSHIFT" -> GLFW.GLFW_KEY_RIGHT_SHIFT;
+            case "CTRL" -> GLFW.GLFW_KEY_LEFT_CONTROL;
+            case "ALT" -> GLFW.GLFW_KEY_LEFT_ALT;
+            case "TAB" -> GLFW.GLFW_KEY_TAB;
+            case "ENTER" -> GLFW.GLFW_KEY_ENTER;
+            case "ESC" -> GLFW.GLFW_KEY_ESCAPE;
+            case "UP" -> GLFW.GLFW_KEY_UP;
+            case "DOWN" -> GLFW.GLFW_KEY_DOWN;
+            case "LEFT" -> GLFW.GLFW_KEY_LEFT;
+            case "RIGHT" -> GLFW.GLFW_KEY_RIGHT;
+            case "BACKSPACE" -> GLFW.GLFW_KEY_BACKSPACE;
+            case "DELETE" -> GLFW.GLFW_KEY_DELETE;
+            case "INSERT" -> GLFW.GLFW_KEY_INSERT;
+            case "HOME" -> GLFW.GLFW_KEY_HOME;
+            case "END" -> GLFW.GLFW_KEY_END;
+            case "PAGEUP" -> GLFW.GLFW_KEY_PAGE_UP;
+            case "PAGEDOWN" -> GLFW.GLFW_KEY_PAGE_DOWN;
+            default -> -1;
+        };
     }
 }
