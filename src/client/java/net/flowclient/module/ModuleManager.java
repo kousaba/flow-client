@@ -7,7 +7,9 @@ import net.flowclient.Flow;
 import net.flowclient.event.Subscribe;
 import net.flowclient.event.impl.Render2DEvent;
 import net.flowclient.module.impl.FPSModule;
+import net.flowclient.module.impl.ScriptLibModule;
 import net.flowclient.module.impl.ScriptModule;
+import net.flowclient.script.runtime.FlowScriptLib;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import org.apache.logging.log4j.core.script.Script;
@@ -25,6 +27,7 @@ public class ModuleManager {
     public ModuleManager(File dataDir){
         this.configFile = new File(dataDir, "modules.json");
         addModule(new FPSModule());
+        addModule(new ScriptLibModule());
         addModule(new ScriptModule());
     }
 
@@ -89,6 +92,14 @@ public class ModuleManager {
             if(!module.isEnabled()) continue;
             if(module instanceof ScriptModule script){
                 script.reload();
+            }
+        }
+    }
+
+    public void registerScriptLibs(){
+        for(Module module : modules.values()){
+            if(module instanceof ScriptModule script){
+                FlowScriptLib.registerAll(((ScriptModule) module).getInterpreter());
             }
         }
     }

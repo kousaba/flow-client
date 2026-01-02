@@ -70,6 +70,7 @@ expressionStmt
 
 expression
     : '(' expression ')' # ParenExpr
+    | expression '[' expression ']' # IndexExpr
     | <assoc=right> expression '^' expression # PowerExpr
     | op=('-' | '!') expression # UnaryExpr
     | expression op=('*' | '/' | '%') expression # MultiplicativeExpr
@@ -78,6 +79,7 @@ expression
     | expression '&&' expression # LogicAndExpr
     | expression '||' expression # LogicOrExpr
     | ID '(' exprList? ')' # FunctionCallExpr
+    | '[' exprList? ']' # ListExpr
     | atom # AtomExpr
     ;
 

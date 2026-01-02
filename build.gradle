@@ -43,7 +43,6 @@ dependencies {
 	// ランタイムライブラリ (コンパイルにも実行にも必要)
 	implementation "org.antlr:antlr4-runtime:4.13.1"
 
-	// ★重要: Modの中にライブラリを埋め込む (これがないとゲーム起動時にクラッシュします)
 	include "org.antlr:antlr4-runtime:4.13.1"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
@@ -75,10 +74,15 @@ java {
 
 jar {
 	inputs.property "archivesName", project.base.archivesName
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
 	from("LICENSE") {
 		rename { "${it}_${inputs.properties.archivesName}"}
 	}
+}
+
+tasks.withType(Jar).configureEach {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 // configure the maven publication

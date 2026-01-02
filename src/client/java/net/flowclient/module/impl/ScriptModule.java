@@ -9,6 +9,7 @@ import net.flowclient.script.ScriptManager;
 import net.flowclient.script.parser.FlowScriptLexer;
 import net.flowclient.script.parser.FlowScriptParser;
 import net.flowclient.script.runtime.FlowScriptInterpreter;
+import net.flowclient.script.runtime.FlowScriptLib;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -32,7 +33,12 @@ public class ScriptModule extends TextHudModule {
         if(code != null && !code.isEmpty()){
             loadScript(code);
             System.out.println("Script reloaded: " + TARGET_FILE);
+            interpreter.callFunction("on_init");
         }
+    }
+
+    public FlowScriptInterpreter getInterpreter(){
+        return interpreter;
     }
 
     public ScriptModule(){
@@ -41,8 +47,17 @@ public class ScriptModule extends TextHudModule {
     }
 
     public void loadScript(String scriptCode){
+        scriptCode = scriptCode.replace("\r", "");
         FlowScriptLexer lexer = new FlowScriptLexer(CharStreams.fromString(scriptCode));
         FlowScriptParser parser = new FlowScriptParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(new org.antlr.v4.runtime.BaseErrorListener() {
+            @Override
+            public void syntaxError(org.antlr.v4.runtime.Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+                                    String msg, org.antlr.v4.runtime.RecognitionException e){
+                System.err.println("FlowScript Error at line " + line + ":" + charPositionInLine + " -> " + msg);
+            }
+        });
         ParseTree tree = parser.script();
         interpreter.load(tree);
         interpreter.callFunction("on_init");
@@ -58,15 +73,33 @@ public class ScriptModule extends TextHudModule {
 
     @Override
     public void render(DrawContext context){
-        System.out.println("ScriptModule Debug: Loaded=" + isLoaded + ", Enabled=" + isEnabled());
         if(!isLoaded || !isEnabled()) return;
-        Object textObj = interpreter.getVariable("text");
-        Object colorObj = interpreter.getVariable("color");
-        String text = textObj != null ? textObj.toString() : "";
-        System.out.println("get text: " + textObj + " color: " + colorObj);
-        int color = colorObj instanceof Number ? ((Number) colorObj).intValue() : -1;
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        context.drawText(textRenderer, text, (int)getX(), (int)getY(), color, true);
+//        Object textObj = interpreter.getVariable("text");
+//        Object colorObj = interpreter.getVariable("color");
+//        String text = textObj != null ? textObj.toString() : "";
+//        int color = colorObj instanceof Number ? ((Number) colorObj).intValue() : -1;
+//        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+//        context.drawText(textRenderer, text, (int)getX(), (int)getY(), color, true);
+//        FlowScriptLib.currentContext = context;
+//        try{
+//            interpreter.callFunction("on_render");
+//            Object text
+//        }
+        FlowScriptLib.currentContext = context;
+        try{
+            interpreter.callFunction("on_render");
+            Object textObj = interpreter.getVariable("text");
+            Object colorObj = interpreter.getVariable("color");
+            Object shadowObj = interpreter.getVariable("shadow");
+            if(textObj != null){
+                String text = textObj != null ? textObj.toString() : "";
+                int color = colorObj instanceof Number ? ((Number) colorObj).intValue() : -1;
+                boolean shadow = shadowObj instanceof Boolean ? (Boolean) shadowObj : (shadowObj instanceof Number && ((Number) shadowObj).intValue() != 0);
+                context.drawText(MinecraftClient.getInstance().textRenderer, text, (int)getX(), (int)getY(), color, shadow);
+            }
+        } finally {
+            FlowScriptLib.currentContext = null;
+        }
     }
 
     @Override

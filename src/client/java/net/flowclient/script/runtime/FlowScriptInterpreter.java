@@ -5,10 +5,12 @@ import net.flowclient.script.ScriptManager;
 import net.flowclient.script.parser.FlowScriptBaseVisitor;
 import net.flowclient.script.parser.FlowScriptLexer;
 import net.flowclient.script.parser.FlowScriptParser;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.logging.log4j.core.script.Script;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
     // 変数管理
@@ -74,6 +76,34 @@ public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
     // ネイティブ関数登録
     public void registerNativeFunction(String name, NativeFunction function){
         nativeFunctions.put(name, function);
+    }
+    public void registerNativeFunction(String name, NativeFunction function, Supplier<Double> intervalSupplier){
+        nativeFunctions.put(name, new CachedNativeFunction(function, intervalSupplier));
+    }
+
+    private static class CachedNativeFunction implements NativeFunction{
+        private final NativeFunction original;
+        private final Supplier<Double> intervalSupplier;
+        private Object cachedValue = null;
+        private long lastUpdateTime = 0;
+        public CachedNativeFunction(NativeFunction original, Supplier<Double> intervalSupplier){
+            this.original = original;
+            this.intervalSupplier = intervalSupplier;
+        }
+
+        @Override
+        public Object call(List<Object> args){
+            long now = System.currentTimeMillis();
+            double intervalSeconds = intervalSupplier.get();
+            long intervalMillis = (long) (intervalSeconds * 1000);
+
+            if (cachedValue == null || intervalMillis <= 0 || (now - lastUpdateTime) > intervalMillis) {
+                cachedValue = original.call(args);
+                lastUpdateTime = now;
+            }
+
+            return cachedValue;
+        }
     }
 
     // 無限ループチェック
@@ -250,7 +280,7 @@ public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
                     if(!ScriptUtils.asBoolean(this.visit(ctx.expression()))) break;
                 }
                 try{
-                    this.visit(ctx.expression());
+                    this.visit(ctx.statement());
                 } catch(BreakException e){
                     break;
                 } catch(ContinueException e){
@@ -263,8 +293,91 @@ public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
         }
         return null;
     }
+    @Override
+    public Object visitForInit(FlowScriptParser.ForInitContext ctx){
+        String name = ctx.ID().getText();
+        Object value = this.visit(ctx.expression());
+        if(ctx.LET() != null){
+            scopeStack.peek().put(name, value);
+        } else{
+            updateVariable(name, value);
+        }
+        return value;
+    }
+    @Override
+    public Object visitForUpdate(FlowScriptParser.ForUpdateContext ctx){
+        String name = ctx.ID().getText();
+        Object right = this.visit(ctx.expression());
+        String op = ctx.op.getText();
+        if (op.equals("=")){
+            updateVariable(name, right);
+            return right;
+        }
+        Object current = getVar(name);
+        if(current == null) current = 0.0;
+        double curVal = ScriptUtils.asDouble(current);
+        double rVal = ScriptUtils.asDouble(right);
+        double result = curVal;
+
+        switch (op) {
+            case "+=" -> result = curVal + rVal;
+            case "-=" -> result = curVal - rVal;
+            case "*=" -> result = curVal * rVal;
+            case "/=" -> result = curVal / rVal;
+        }
+
+        updateVariable(name, result);
+        return result;
+    }
+
+    // 変数を探して更新する（見つからなければグローバルに入れる）
+    private void updateVariable(String name, Object value) {
+        // ローカルスコープから順に探す
+        for (Map<String, Object> scope : scopeStack) {
+            if (scope.containsKey(name)) {
+                scope.put(name, value);
+                return;
+            }
+        }
+        // どこにもなければグローバル（一番下）に追加
+        scopeStack.peekLast().put(name, value);
+    }
 
     // 演算子
+    @Override
+    public Object visitParenExpr(FlowScriptParser.ParenExprContext ctx){
+        return this.visit(ctx.expression());
+    }
+    @Override
+    public Object visitPowerExpr(FlowScriptParser.PowerExprContext ctx){
+        Object left = this.visit(ctx.expression(0));
+        Object right = this.visit(ctx.expression(1));
+        return Math.pow(ScriptUtils.asDouble(left), ScriptUtils.asDouble(right));
+    }
+
+    @Override
+    public Object visitListExpr(FlowScriptParser.ListExprContext ctx){
+        List<Object> list = new ArrayList<>();
+        if(ctx.exprList() != null){
+            for(var expr : ctx.exprList().expression()){
+                list.add(this.visit(expr));
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public Object visitIndexExpr(FlowScriptParser.IndexExprContext ctx){
+        Object target = this.visit(ctx.expression(0));
+        Object indexObj = this.visit(ctx.expression(1));
+        if(target instanceof List<?> list && indexObj instanceof Number n){
+            int index = n.intValue();
+            if(index >= 0 && index < list.size()){
+                return list.get(index);
+            }
+        }
+        return null;
+    }
     @Override
     public Object visitAdditiveExpr(FlowScriptParser.AdditiveExprContext ctx){
         Object left = this.visit(ctx.expression(0));
@@ -291,17 +404,28 @@ public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitRelationalExpr(FlowScriptParser.RelationalExprContext ctx){
-        double left = ScriptUtils.asDouble(this.visit(ctx.expression(0)));
-        double right = ScriptUtils.asDouble(this.visit(ctx.expression(1)));
+    public Object visitRelationalExpr(FlowScriptParser.RelationalExprContext ctx) {
+        Object left = this.visit(ctx.expression(0));
+        Object right = this.visit(ctx.expression(1));
         String op = ctx.op.getText();
-        switch (op){
-            case "==": return left == right;
-            case "!=": return left != right;
-            case "<": return left < right;
-            case ">": return left > right;
-            case "<=": return left <= right;
-            case ">=": return left >= right;
+
+        if(op.equals("==")) {
+            if(left == null && right == null) return true;
+            if(left == null || right == null) return false;
+            return left.equals(right);
+        }
+        if(op.equals("!=")) {
+            if(left == null && right == null) return false;
+            if(left == null || right == null) return true;
+            return !left.equals(right);
+        }
+        double lVal = ScriptUtils.asDouble(left);
+        double rVal = ScriptUtils.asDouble(right);
+        switch (op) {
+            case "<": return lVal < rVal;
+            case ">": return lVal > rVal;
+            case "<=": return lVal <= rVal;
+            case ">=": return lVal >= rVal;
         }
         return false;
     }
@@ -329,20 +453,20 @@ public class FlowScriptInterpreter extends FlowScriptBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitAtomExpr(FlowScriptParser.AtomExprContext ctx){
-        if(ctx.atom().NUMBER() != null) return Double.parseDouble(ctx.atom().NUMBER().getText());
-        if(ctx.atom().STRING() != null){
+    public Object visitAtomExpr(FlowScriptParser.AtomExprContext ctx) {
+        if (ctx.atom().NUMBER() != null) return Double.parseDouble(ctx.atom().NUMBER().getText());
+        if (ctx.atom().STRING() != null) {
             String s = ctx.atom().STRING().getText();
             return s.substring(1, s.length() - 1);
         }
-        if(ctx.atom().TRUE() != null) return true;
-        if(ctx.atom().FALSE() != null) return false;
-        if(ctx.atom().NULL() != null) return null;
-        if(ctx.atom().ID() != null) return getVar(ctx.atom().ID().getText());
-        if(ctx.atom().COLOR_LITERAL() != null){
+        if (ctx.atom().TRUE() != null) return true;
+        if (ctx.atom().FALSE() != null) return false;
+        if (ctx.atom().NULL() != null) return null;
+        if (ctx.atom().ID() != null) return getVar(ctx.atom().ID().getText());
+        if (ctx.atom().COLOR_LITERAL() != null) {
             String hex = ctx.atom().COLOR_LITERAL().getText().substring(1);
             long val = Long.parseLong(hex, 16);
-            if(hex.length() == 6) val |= 0xFF000000L;
+            if (hex.length() == 6) val |= 0xFF000000L;
             return (int) val;
         }
         return null;

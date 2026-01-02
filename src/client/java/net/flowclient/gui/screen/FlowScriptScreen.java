@@ -26,6 +26,8 @@ public class FlowScriptScreen extends Screen {
     private List<String> fileList = new ArrayList<>();
     private int selectedFileIndex = -1;
 
+    private static List<String> consoleLogs = new ArrayList<>();
+
     private final int itemHeight = 15;
     private final int listTopOffset = 30;
     private TextFieldWidget fileNameField;
@@ -166,9 +168,19 @@ public class FlowScriptScreen extends Screen {
         context.fill(sidebarWidth, consoleY, this.width, this.height, 0xFF101015);
         context.drawStrokedRectangle(sidebarWidth, consoleY, this.width - sidebarWidth, consoleHeight, 0xFF404040);
         context.drawText(this.textRenderer, "Console / Output", sidebarWidth + 5, consoleY + 5, 0xFFAAAAAA, true);
+        for(int i = 0;i < consoleLogs.size();i++){
+            String text = consoleLogs.get(consoleLogs.size() - i - 1);
+            context.drawText(this.textRenderer, text, sidebarWidth + 5, consoleY + 5 + (textRenderer.fontHeight + 2) * (i + 1), 0xFFAAAAAA, true);
+        }
+
 
         // ウィジェット描画
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    public static void addLog(String msg){
+        consoleLogs.add(msg);
+        if(consoleLogs.size() > 10) consoleLogs.removeFirst();
     }
 
     @Override

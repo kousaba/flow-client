@@ -16,7 +16,6 @@ public abstract class HudModule extends Module {
 
     @Subscribe
     public void onRender(Render2DEvent event){
-        System.out.println("Catched onRender, isEnabled: " + this.isEnabled());
         if(!this.isEnabled()) return;
         this.render(event.getContext());
     }

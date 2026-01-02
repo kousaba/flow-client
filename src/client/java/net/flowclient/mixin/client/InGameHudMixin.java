@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class InGameHudMixin {
     @Inject(method = "render", at = @At("TAIL"))
     public void onRender(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci){
-        System.out.println("onRender called EVENT_BUS post");
         Flow.EVENT_BUS.post(new Render2DEvent(context, tickCounter));
     }
 }
