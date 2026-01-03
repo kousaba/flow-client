@@ -2,6 +2,7 @@ package net.flowclient.module.impl;
 
 import net.flowclient.event.Subscribe;
 import net.flowclient.event.impl.ChatReceiveEvent;
+import net.flowclient.event.impl.ItemTooltipEvent;
 import net.flowclient.event.impl.Render2DEvent;
 import net.flowclient.event.impl.TickEvent;
 import net.flowclient.module.HudModule;
@@ -11,6 +12,7 @@ import net.flowclient.script.parser.FlowScriptLexer;
 import net.flowclient.script.parser.FlowScriptParser;
 import net.flowclient.script.runtime.FlowScriptInterpreter;
 import net.flowclient.script.runtime.FlowScriptLib;
+import net.flowclient.script.runtime.ScriptContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -97,6 +99,18 @@ public class ScriptModule extends TextHudModule {
         if(!isLoaded || !isEnabled()) return;
         System.out.println("on_chat called");
         interpreter.callFunction("on_chat", List.of(event.message));
+    }
+
+    @Subscribe
+    public void onTooltip(ItemTooltipEvent event){
+        if(!isLoaded || !isEnabled()) return;
+        ScriptContext.currentTooltipEvent = event;
+        try{
+            interpreter.callFunction("on_tooltip");
+        } catch (Exception e){
+
+        }
+        ScriptContext.currentTooltipEvent = null;
     }
 
     @Override

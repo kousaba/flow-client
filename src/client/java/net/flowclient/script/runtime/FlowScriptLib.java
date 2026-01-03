@@ -1,10 +1,12 @@
 package net.flowclient.script.runtime;
 
 import net.flowclient.Flow;
+import net.flowclient.event.impl.ItemTooltipEvent;
 import net.flowclient.gui.screen.FlowScriptScreen;
 import net.flowclient.module.impl.ScriptLibModule;
 import net.flowclient.module.impl.ScriptModule;
 import net.flowclient.module.setting.impl.NumberSetting;
+import net.flowclient.script.parser.FlowScriptParser;
 import net.flowclient.util.FlowLogger;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -228,6 +230,23 @@ public class FlowScriptLib {
             if(args.isEmpty()) return "";
             return args.get(0).toString().toLowerCase();
         });
+        interpreter.registerNativeFunction("tooltip_add", args -> {
+            if(ScriptContext.currentTooltipEvent != null && !args.isEmpty()){
+                String text = args.get(0).toString();
+                ScriptContext.currentTooltipEvent.add(text);
+            }
+            return null;
+        });
+        interpreter.registerNativeFunction("tooltip_get_item_id", args -> {
+            if(ScriptContext.currentTooltipEvent != null){
+                var stack = ScriptContext.currentTooltipEvent.getStack();
+                return net.minecraft.registry.Registries.ITEM.getId(stack.getItem()).toString();
+            }
+            return "null";
+        });
+        interpreter.registerNativeFunction("tooltip_get_item_name", args -> (ScriptContext.currentTooltipEvent != null ? ScriptContext.currentTooltipEvent.getStack().getName().toString() : "null"));
+        interpreter.registerNativeFunction("tooltip_get_item_damage", args -> (ScriptContext.currentTooltipEvent != null ? (double) ScriptContext.currentTooltipEvent.getStack().getDamage() : 0.0));
+        interpreter.registerNativeFunction("tooltip_get_item_max_damage", args -> (ScriptContext.currentTooltipEvent != null ? (double) ScriptContext.currentTooltipEvent.getStack().getMaxDamage() : 0.0));
     }
 
     private static int getKeyCode(String keyName){

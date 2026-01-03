@@ -12,7 +12,8 @@
 		"GameRendererMixin",
 		"LightmapTextureManagerMixin",
 		"ClientPlayNetworkHandlerMixin",
-		"ChatHudMixin"
+		"ChatHudMixin",
+		"ItemStackMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
